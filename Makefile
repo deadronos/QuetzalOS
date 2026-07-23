@@ -1,19 +1,30 @@
-# Explicitly include Homebrew paths on macOS ARM64 / x86_64
-export PATH := /opt/homebrew/bin:/usr/local/bin:$(PATH)
-
-# Detect toolchain binaries
-CROSS_GCC := $(shell which x86_64-elf-gcc 2>/dev/null)
-CROSS_LD  := $(shell which x86_64-elf-ld 2>/dev/null)
-OBJCOPY   := $(shell which x86_64-elf-objcopy 2>/dev/null)
-NASM      := $(shell which nasm 2>/dev/null)
-
-ifneq ($(CROSS_GCC),)
-    CC = $(CROSS_GCC)
-    LD = $(CROSS_LD)
+# OS Detection
+ifeq ($(OS),Windows_NT)
+    HOST_OS := Windows
+    RM := del /F /Q 2>nul || true
+    ifneq ($(shell where rm 2>nul),)
+        RM := rm -f
+    endif
 else
+    HOST_OS := $(shell uname -s)
+    RM := rm -f
+    export PATH := /opt/homebrew/bin:/usr/local/bin:$(PATH)
+endif
+
+# Toolchain definitions
+CROSS_GCC ?= x86_64-elf-gcc
+CROSS_LD  ?= x86_64-elf-ld
+OBJCOPY   ?= x86_64-elf-objcopy
+NASM      ?= nasm
+
+# Check toolchain availability
+ifeq ($(shell $(CROSS_GCC) --version 2>/dev/null),)
     CC = clang -target x86_64-unknown-elf
     LD = ld
     OBJCOPY = objcopy
+else
+    CC = $(CROSS_GCC)
+    LD = $(CROSS_LD)
 endif
 
 AS = $(NASM)
@@ -50,6 +61,6 @@ quetzal.bin: quetzal.elf
 	$(OBJCOPY) -O elf32-i386 quetzal.elf quetzal.bin
 
 clean:
-	rm -f boot/*.o kernel/*.o kernel/*/*.o kernel/*/*/*.o quetzal.elf quetzal.bin
+	$(RM) boot/*.o kernel/*.o kernel/*/*.o kernel/*/*/*.o quetzal.elf quetzal.bin
 
 .PHONY: all clean
