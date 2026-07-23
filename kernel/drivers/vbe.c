@@ -17,9 +17,30 @@ static uint32_t fb_w = 800;
 static uint32_t fb_h = 600;
 static uint32_t fb_pitch_pixels = 800;
 
+static uint32_t pci_read_config(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset) {
+    uint32_t address = (uint32_t)((bus << 16) | (dev << 11) | (func << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
+    outl(0xCF8, address);
+    return inl(0xCFC);
+}
+
+static uint32_t pci_find_vga_lfb(void) {
+    for (uint8_t dev = 0; dev < 32; dev++) {
+        uint32_t vendor_device = pci_read_config(0, dev, 0, 0x00);
+        uint16_t vendor = vendor_device & 0xFFFF;
+
+        if (vendor == 0x1234 || vendor == 0x8086 || vendor == 0x1013) {
+            uint32_t bar0 = pci_read_config(0, dev, 0, 0x10);
+            if (bar0 != 0 && !(bar0 & 1)) {
+                return bar0 & 0xFFFFFFF0;
+            }
+        }
+    }
+    return 0xFD000000;
+}
+
 static void bochs_vbe_set_mode(uint16_t width, uint16_t height, uint16_t bpp) {
     outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_ENABLE);
-    outw(VBE_DISPI_IOPORT_DATA, 0); // Disable VBE first
+    outw(VBE_DISPI_IOPORT_DATA, 0); // Disable VBE
 
     outw(VBE_DISPI_IOPORT_INDEX, VBE_DISPI_INDEX_XRES);
     outw(VBE_DISPI_IOPORT_DATA, width);
@@ -36,14 +57,22 @@ static void bochs_vbe_set_mode(uint16_t width, uint16_t height, uint16_t bpp) {
 
 void vbe_init(uint64_t lfb_addr, uint32_t width, uint32_t height, uint32_t pitch, uint8_t bpp) {
     (void)bpp;
+    
+    /* Dynamically probe PCI bus for VGA LFB address if not provided by multiboot */
     if (lfb_addr != 0) {
         lfb = (uint32_t*)lfb_addr;
+    } else {
+        uint32_t probed_lfb = pci_find_vga_lfb();
+        if (probed_lfb != 0) {
+            lfb = (uint32_t*)(uint64_t)probed_lfb;
+        }
     }
+
     if (width > 0) fb_w = width;
     if (height > 0) fb_h = height;
     if (pitch > 0) fb_pitch_pixels = pitch / 4;
 
-    /* Program Bochs/QEMU VBE DISPI graphics hardware directly */
+    /* Program Bochs/QEMU VBE DISPI graphics hardware */
     bochs_vbe_set_mode(fb_w, fb_h, 32);
 }
 

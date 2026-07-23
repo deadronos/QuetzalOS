@@ -21,8 +21,8 @@ pml4_table:
     resb 4096
 pdpt_table:
     resb 4096
-pd_table:
-    resb 4096
+pd_tables:
+    resb 4096 * 4               ; 4 Page Directories for 4 GB total identity mapping
 stack_bottom:
     resb 65536                  ; 64 KB kernel boot stack
 stack_top:
@@ -54,7 +54,7 @@ start:
     ; Save multiboot info structure address (ebx)
     mov edi, ebx                ; Pass Multiboot info pointer as 1st arg to 64-bit main (RDI)
 
-    ; Setup Page Tables (Identity Map first 1GB using 2MB pages)
+    ; Setup Page Tables (Identity Map full 4GB using 2MB pages)
     call setup_paging
 
     ; Enable PAE in CR4
@@ -93,20 +93,32 @@ setup_paging:
     or eax, 0b11                ; Present + Writable
     mov [pml4_table], eax
 
-    ; Link PDPT[0] -> PD
-    mov eax, pd_table
+    ; Link PDPT[0..3] -> 4 Page Directories (covering 4 GB)
+    mov ecx, 0
+.map_pdpt:
+    mov eax, pd_tables
+    mov edx, ecx
+    shl edx, 12                 ; edx = ecx * 4096
+    add eax, edx
     or eax, 0b11                ; Present + Writable
-    mov [pdpt_table], eax
+    mov [pdpt_table + ecx * 8], eax
+    inc ecx
+    cmp ecx, 4
+    jne .map_pdpt
 
-    ; Identity Map PD entries (512 entries x 2MB = 1GB)
+    ; Identity Map 2048 entries of 2MB = 4GB Total
     mov ecx, 0
 .map_pd:
-    mov eax, 0x200000           ; 2 MB
-    mul ecx                     ; EAX = ecx * 2MB
+    mov eax, ecx
+    shl eax, 21                 ; EAX = (ecx << 21) = low 32 bits of (ecx * 2MB)
     or eax, 0b10000011          ; Present + Writable + Page Size (2MB Huge Page)
-    mov [pd_table + ecx * 8], eax
+    mov edx, ecx
+    shr edx, 11                 ; EDX = (ecx >> 11) = high 32 bits of (ecx * 2MB)
+
+    mov [pd_tables + ecx * 8], eax
+    mov [pd_tables + ecx * 8 + 4], edx
     inc ecx
-    cmp ecx, 512
+    cmp ecx, 2048               ; 2048 entries * 2MB = 4 GB
     jne .map_pd
     ret
 
