@@ -16,6 +16,11 @@
 
 #include <stdint.h>
 
+/* Page Table Symbols from boot.asm */
+extern uint8_t pml4_table[];
+extern uint8_t pdpt_table[];
+extern uint8_t pd_tables[];
+
 // --- Boot / Kernel Image ----------------------------------------------------
 #define QOS_KERNEL_BASE_PHYS        0x00100000u   // 1 MB - Kernel ELF image
 #define QOS_KERNEL_SIZE_MAX         0x00100000u   // 1 MB max image size
@@ -23,10 +28,10 @@
 #define QOS_KERNEL_STACK_SIZE       0x00100000u   // 1 MB stack region
 
 // --- System Tables (GDT64, IDT64, PML4/PDPT/PD) -----------------------------
-#define QOS_PAGE_TABLE_BASE         0x00200000u
-#define QOS_PML4_ADDR               (QOS_PAGE_TABLE_BASE + 0x0000)
-#define QOS_PDPT_ADDR               (QOS_PAGE_TABLE_BASE + 0x1000)
-#define QOS_PD_BASE                 (QOS_PAGE_TABLE_BASE + 0x2000)
+#define QOS_PAGE_TABLE_BASE         ((uintptr_t)pml4_table)
+#define QOS_PML4_ADDR               ((uintptr_t)pml4_table)
+#define QOS_PDPT_ADDR               ((uintptr_t)pdpt_table)
+#define QOS_PD_BASE                 ((uintptr_t)pd_tables)
 
 // --- Kernel Dynamic Heap ----------------------------------------------------
 #define QOS_KERNEL_HEAP_BASE        0x00400000u   // 12 MB heap

@@ -9,6 +9,11 @@ BITS 32
 %define MULTIBOOT_FLAGS     0x00000003   ; align modules + mem info
 %define MULTIBOOT_CHECKSUM  -(MULTIBOOT_MAGIC + MULTIBOOT_FLAGS)
 
+global start
+global pml4_table
+global pdpt_table
+global pd_tables
+
 section .multiboot
 align 4
     dd MULTIBOOT_MAGIC
@@ -17,15 +22,17 @@ align 4
 
 section .bss
 align 4096
+stack_bottom:
+    resb 65536                  ; 64 KB kernel boot stack (stack grows down)
+stack_top:
+
+align 4096
 pml4_table:
     resb 4096
 pdpt_table:
     resb 4096
 pd_tables:
     resb 4096 * 4               ; 4 Page Directories for 4 GB total identity mapping
-stack_bottom:
-    resb 65536                  ; 64 KB kernel boot stack
-stack_top:
 
 section .rodata
 align 8
@@ -40,7 +47,6 @@ gdt64:
     dq gdt64
 
 section .text
-global start
 extern kernel_main
 
 start:

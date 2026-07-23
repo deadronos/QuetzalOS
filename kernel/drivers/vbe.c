@@ -143,6 +143,14 @@ void vbe_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t colo
 }
 
 void vbe_draw_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint32_t color) {
+    if (fb_w == 0 || fb_h == 0) return;
+
+    /* Clamp inputs to visible screen bounds [0, fb_w - 1] and [0, fb_h - 1] to prevent signed overflow */
+    if (x0 >= fb_w) x0 = (x0 > 0x7FFFFFFF) ? 0 : (fb_w - 1);
+    if (x1 >= fb_w) x1 = (x1 > 0x7FFFFFFF) ? 0 : (fb_w - 1);
+    if (y0 >= fb_h) y0 = (y0 > 0x7FFFFFFF) ? 0 : (fb_h - 1);
+    if (y1 >= fb_h) y1 = (y1 > 0x7FFFFFFF) ? 0 : (fb_h - 1);
+
     /* Bresenham line algorithm. Handles all octants; integer-only. */
     int dx = (int)(x1 > x0 ? x1 - x0 : x0 - x1);
     int dy = (int)(y1 > y0 ? y1 - y0 : y0 - y1);
@@ -153,7 +161,6 @@ void vbe_draw_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint32_t 
     int x = (int)x0;
     int y = (int)y0;
     for (;;) {
-        /* Bounds check via draw_pixel which clips to fb_w/fb_h. */
         vbe_draw_pixel((uint32_t)x, (uint32_t)y, color);
         if (x == (int)x1 && y == (int)y1) break;
         int e2 = err << 1;
@@ -186,13 +193,16 @@ void vbe_draw_char(uint32_t x, uint32_t y, char c, uint32_t fg, uint32_t bg) {
 }
 
 void vbe_draw_string(uint32_t x, uint32_t y, const char* str, uint32_t fg, uint32_t bg) {
+    if (x >= fb_w || y >= fb_h) return;
     uint32_t cx = x;
     uint32_t cy = y;
     while (*str) {
-        if (*str == '\n') {
+        if (*str == '\n' || cx + 8 > fb_w) {
             cx = x;
             cy += 10;
-        } else {
+            if (cy >= fb_h) break;
+        }
+        if (*str != '\n') {
             vbe_draw_char(cx, cy, *str, fg, bg);
             cx += 8;
         }

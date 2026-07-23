@@ -13,12 +13,14 @@ static char num_to_char(uint32_t val) {
 }
 
 void kernel_main(multiboot_info_t* mb_info) {
-    uint64_t fb_addr = QOS_DEFAULT_LFB_PHYS;
+    uint64_t fb_addr = 0;
     uint32_t width   = QOS_DEFAULT_FB_WIDTH;
     uint32_t height  = QOS_DEFAULT_FB_HEIGHT;
     uint32_t pitch   = QOS_DEFAULT_FB_PITCH;
 
-    if (mb_info && (mb_info->flags & (1u << 12)) && mb_info->framebuffer_addr) {
+    /* Validate Multiboot framebuffer: must be flag-present, non-zero addr, Direct RGB (type 1), 32 bpp */
+    if (mb_info && (mb_info->flags & (1u << 12)) && mb_info->framebuffer_addr &&
+        mb_info->framebuffer_type == 1 && mb_info->framebuffer_bpp == 32) {
         fb_addr = mb_info->framebuffer_addr;
         width   = mb_info->framebuffer_width;
         height  = mb_info->framebuffer_height;
