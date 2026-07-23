@@ -1,4 +1,5 @@
 #include "kernel.h"
+#include "memory_map.h"
 #include "arch/x86_64/idt.h"
 #include "drivers/vbe.h"
 #include "drivers/pit.h"
@@ -12,12 +13,12 @@ static char num_to_char(uint32_t val) {
 }
 
 void kernel_main(multiboot_info_t* mb_info) {
-    uint64_t fb_addr = 0xFD000000;
-    uint32_t width = 800;
-    uint32_t height = 600;
-    uint32_t pitch = 3200;
+    uint64_t fb_addr = QOS_DEFAULT_LFB_PHYS;
+    uint32_t width   = QOS_DEFAULT_FB_WIDTH;
+    uint32_t height  = QOS_DEFAULT_FB_HEIGHT;
+    uint32_t pitch   = QOS_DEFAULT_FB_PITCH;
 
-    if (mb_info && (mb_info->flags & (1 << 12)) && mb_info->framebuffer_addr) {
+    if (mb_info && (mb_info->flags & (1u << 12)) && mb_info->framebuffer_addr) {
         fb_addr = mb_info->framebuffer_addr;
         width   = mb_info->framebuffer_width;
         height  = mb_info->framebuffer_height;
@@ -65,6 +66,10 @@ void kernel_main(multiboot_info_t* mb_info) {
         vbe_draw_string(28, 112, "DAY SIGN:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
         vbe_draw_string(104, 112, tonal.sign_name, COLOR_JADE, COLOR_OBSIDIAN);
 
+        /* Render a diagonal ritual line (calls the new vbe_draw_line that
+         * serpentc_eval advertised but never implemented).                   */
+        vbe_draw_line(0, 480, 800, 580, COLOR_TURQUOISE);
+
         /* Handle Input */
         while (keyboard_has_char()) {
             char ch = keyboard_getchar();
@@ -75,7 +80,7 @@ void kernel_main(multiboot_info_t* mb_info) {
         }
         vbe_draw_string(16, 520, key_log, COLOR_AZTEC_GOLD, COLOR_OBSIDIAN);
 
-        /* Evaluate SerpentC Script sample */
+        /* Evaluate SerpentC Script sample (still a stub; see docs/IMPROVEMENTS.md) */
         serpentc_eval("feather_draw_line(0,0,800,600);");
 
         /* Swap double buffer to physical framebuffer */
