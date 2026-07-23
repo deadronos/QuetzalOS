@@ -238,7 +238,7 @@ Larger redesigns; tackle once the high-priority items are done.
 | H2  | Bounds-clip ritual_geo                               | High     | S      | Fixed         |
 | H3  | vbe_draw_char blank-glyph handling                   | High     | XS     | Fixed         |
 | H4  | Don't clobber Multiboot framebuffer mode             | High     | XS     | Fixed         |
-| M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Open          |
+| M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Fixed         |
 | M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Open          |
 | M3  | Bounds checks for draw funcs                         | Medium   | S      | Partial\*     |
 | M4  | VGA text-mode fallback                               | Medium   | M      | Open          |

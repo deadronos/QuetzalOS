@@ -82,8 +82,8 @@ void kernel_main(multiboot_info_t* mb_info) {
         }
         vbe_draw_string(16, 520, key_log, COLOR_AZTEC_GOLD, COLOR_OBSIDIAN);
 
-        /* Evaluate SerpentC Script sample (still a stub; see docs/IMPROVEMENTS.md) */
-        serpentc_eval("feather_draw_line(0,0,800,600);");
+        /* Evaluate real SerpentC script */
+        serpentc_eval("feather_draw_line(0, 480, 800, 580, COLOR_TURQUOISE); feather_rect(700, 50, 80, 60, COLOR_AZTEC_GOLD);");
 
         /* Swap double buffer to physical framebuffer */
         vbe_swap_buffers();
