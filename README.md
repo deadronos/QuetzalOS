@@ -47,26 +47,43 @@ QuetzalOS (TonalOS) is a bare-metal 64-bit operating system inspired by retro wo
 
 ```
 QuetzalOS/
+├── .github/
+│   └── workflows/
+│       └── build.yml         # GitHub Actions CI build workflow
 ├── boot/
 │   └── boot.asm              # Multiboot1 entry, 32->64 bit transition, 4GB identity paging
 ├── docs/
-│   └── ARCHITECTURE.md       # Comprehensive OS architectural specification & memory map
+│   ├── ARCHITECTURE.md       # Comprehensive OS architectural specification & memory map
+│   ├── IMPROVEMENTS.md       # Phased roadmap & completion tracking table
+│   ├── PHASE_1_PLAN.md       # High-priority correctness plan
+│   ├── PHASE_2_PLAN.md       # SerpentC interpreter plan
+│   ├── PHASE_3_PLAN.md       # Physical allocator & diagnostics plan
+│   └── PHASE_4_PLAN.md       # Optimization & CI plan
 ├── kernel/
 │   ├── arch/
 │   │   └── x86_64/
 │   │       ├── idt.h / idt.c # 64-bit IDT setup & 8259 PIC remapping
-│   │       ├── isr.asm       # Low-level interrupt service routine wrappers
-│   │       └── io.h          # Inline x86_64 port I/O functions (inb, outb, inw, outw, inl, outl)
+      ├── isr.asm       # Low-level interrupt service routine wrappers
+│   │       ├── io.h          # Inline x86_64 port I/O functions (inb, outb, inw, outw, inl, outl)
+│   │       ├── segments.h    # Symbolic GDT selector & IDT attribute constants
+│   │       └── serial.h / .c # 16550 UART COM1 serial logger & kprintf
 │   ├── drivers/
-│   │   ├── vbe.h / vbe.c     # VESA linear framebuffer driver, PCI BAR probe & double buffer
+│   │   ├── vbe.h / vbe.c     # VESA linear framebuffer driver, 256-bus PCI scan, 64-bit BAR probe & double buffer
 │   │   ├── pit.h / pit.c     # 8254 PIT timer ISR & Tonalpohualli calendar engine
-│   │   └── ps2_keyboard.h / .c # PS/2 keyboard IRQ handler & 256-byte circular ring buffer
+│   │   ├── ps2_keyboard.h / .c # Atomic PS/2 keyboard IRQ handler, E0 prefix state machine & Shift support
+│   │   └── vga_text.h / .c   # 80x25 VGA text mode fallback console (0xB8000)
 │   ├── graphics/
 │   │   ├── font8x8.h / .c    # 8x8 bitmap font glyph definitions
-│   │   └── ritual_geo.h / .c # Procedural Aztec step pyramid & serpent renderer
+│   │   └── ritual_geo.h / .c # Procedural Aztec step pyramid & serpent renderer (with bounds clipping)
+│   ├── mm/
+│   │   └── phys.h / phys.c   # Multiboot mmap parser & 4 KB physical page frame bitmap allocator
 │   ├── serpentc/
-│   │   └── serpentc.h / .c   # SerpentC runtime engine & arena allocator
+│   │   ├── lexer.h / lexer.c # Zero-allocation lexer & tokenizer
+│   │   ├── builtins.h / .c   # Symbol table & native graphics built-in dispatcher
+│   │   └── serpentc.h / .c   # SerpentC statement parser & execution engine
 │   ├── kernel.h / kernel.c   # Main C kernel entry point & render loop
+├── AGENTS.md                 # Mandatory AI agent workflow & adversarial audit checklist
+├── CONTRIBUTING.md           # Contributor guidelines & build instructions
 ├── linker.ld                 # x86_64 ELF Linker script (Kernel base at 1MB physical RAM)
 ├── Makefile                  # Cross-platform build script (macOS, Linux, Windows)
 ├── qemu.sh                   # Launcher script for macOS / Linux

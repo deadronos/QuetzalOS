@@ -1,0 +1,26 @@
+name: QuetzalOS Build CI
+
+on:
+  push:
+    branches: [ main, feature/*, quick-wins ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build Kernel ELF & Binary
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Toolchain & Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm gcc-x86-64-elf binutils-x86-64-elf make
+
+      - name: Build Kernel Binary
+        run: |
+          make clean
+          make

@@ -239,21 +239,21 @@ Larger redesigns; tackle once the high-priority items are done.
 | H3  | vbe_draw_char blank-glyph handling                   | High     | XS     | Fixed         |
 | H4  | Don't clobber Multiboot framebuffer mode             | High     | XS     | Fixed         |
 | M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Fixed         |
-| M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Open          |
-| M3  | Bounds checks for draw funcs                         | Medium   | S      | Partial\*     |
+| M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Fixed         |
+| M3  | Bounds checks for draw funcs                         | Medium   | S      | Fixed         |
 | M4  | VGA text-mode fallback                               | Medium   | M      | Fixed         |
 | M5  | Use Multiboot memory map                             | Medium   | M      | Fixed         |
 | M6  | Named segment selector constants                     | Medium   | XS     | Fixed         |
-| M7  | Full PCI bus scan + 64-bit BARs                      | Medium   | M      | Open          |
-| L1  | GitHub Actions CI + QEMU smoke test                  | Low      | M      | Open          |
+| M7  | Full PCI bus scan + 64-bit BARs                      | Medium   | M      | Fixed         |
+| L1  | GitHub Actions CI + QEMU smoke test                  | Low      | M      | Fixed         |
 | L2  | GDB remote stub                                      | Low      | L      | Open          |
 | L3  | Serial `kprintf`                                     | Low      | M      | Fixed         |
 | L4  | Cooperative task scheduler                           | Low      | XL     | Open          |
 | L5  | ELF64 loader for user scripts                        | Low      | XL     | Open          |
 | L6  | ACPI / HPET                                          | Low      | XL     | Open          |
-| D1  | Compile-time memory map asserts                      | Doc      | S      | Open          |
-| D2  | CONTRIBUTING.md                                      | Doc      | S      | Open          |
-| D3  | Tag "partial" claims in README                       | Doc      | XS     | Open          |
+| D1  | Compile-time memory map asserts                      | Doc      | S      | Fixed         |
+| D2  | CONTRIBUTING.md                                      | Doc      | S      | Fixed         |
+| D3  | Tag "partial" claims in README                       | Doc      | XS     | Fixed         |
 
 \* M3 is *partially* addressed by the quick-wins PR (hoisting in `vbe_fill_rect`).
 

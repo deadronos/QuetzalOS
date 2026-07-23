@@ -33,17 +33,45 @@ static uint32_t pci_read_config(uint8_t bus, uint8_t dev, uint8_t func, uint8_t 
     return inl(0xCFC);
 }
 
-static uint32_t pci_find_vga_lfb(void) {
-    for (uint8_t dev = 0; dev < 32; dev++) {
-        uint32_t vendor_device = pci_read_config(0, dev, 0, 0x00);
-        uint16_t vendor = vendor_device & 0xFFFF;
+static inline void vbe_put_pixel(uint32_t x, uint32_t y, uint32_t color) {
+    backbuffer[y * fb_pitch_pixels + x] = color;
+}
 
-        if (vendor == PCI_VENDOR_QEMU_BAR ||
-            vendor == PCI_VENDOR_INTEL   ||
-            vendor == PCI_VENDOR_CIRRUS) {
-            uint32_t bar0 = pci_read_config(0, dev, 0, 0x10);
-            if (bar0 != 0 && !(bar0 & 1)) {
-                return bar0 & 0xFFFFFFF0;
+static uint64_t pci_find_vga_lfb(void) {
+    for (uint16_t bus = 0; bus < 256; bus++) {
+        for (uint8_t dev = 0; dev < 32; dev++) {
+            uint32_t header_type_reg = pci_read_config((uint8_t)bus, dev, 0, 0x0C);
+            uint8_t header_type = (uint8_t)((header_type_reg >> 16) & 0xFF);
+            uint8_t max_funcs = (header_type & 0x80) ? 8 : 1;
+
+            for (uint8_t func = 0; func < max_funcs; func++) {
+                uint32_t vendor_device = pci_read_config((uint8_t)bus, dev, func, 0x00);
+                uint16_t vendor = vendor_device & 0xFFFF;
+                if (vendor == 0xFFFF || vendor == 0x0000) continue;
+
+                uint32_t class_reg = pci_read_config((uint8_t)bus, dev, func, 0x08);
+                uint8_t class_code = (uint8_t)((class_reg >> 24) & 0xFF);
+
+                if (class_code == 0x03 || vendor == PCI_VENDOR_QEMU_BAR ||
+                    vendor == PCI_VENDOR_INTEL || vendor == PCI_VENDOR_CIRRUS) {
+
+                    uint32_t bar0 = pci_read_config((uint8_t)bus, dev, func, 0x10);
+                    if (bar0 != 0 && !(bar0 & 1)) {
+                        uint8_t bar_type = (uint8_t)((bar0 >> 1) & 0x03);
+                        uint64_t lfb_phys = 0;
+
+                        if (bar_type == 0x02) { // 64-bit BAR
+                            uint32_t bar1 = pci_read_config((uint8_t)bus, dev, func, 0x14);
+                            lfb_phys = ((uint64_t)bar1 << 32) | (uint64_t)(bar0 & 0xFFFFFFF0u);
+                        } else { // 32-bit BAR
+                            lfb_phys = (uint64_t)(bar0 & 0xFFFFFFF0u);
+                        }
+
+                        if (lfb_phys != 0 && lfb_phys < 0x100000000ULL) {
+                            return lfb_phys;
+                        }
+                    }
+                }
             }
         }
     }
@@ -75,7 +103,7 @@ void vbe_init(uint64_t lfb_addr, uint32_t width, uint32_t height, uint32_t pitch
         lfb = (uint32_t*)(uintptr_t)lfb_addr;
         externally_configured = 1;
     } else {
-        uint32_t probed_lfb = pci_find_vga_lfb();
+        uint64_t probed_lfb = pci_find_vga_lfb();
         if (probed_lfb != 0) {
             lfb = (uint32_t*)(uintptr_t)probed_lfb;
         }
@@ -96,7 +124,7 @@ uint32_t vbe_get_height(void) { return fb_h; }
 
 void vbe_draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
     if (x < fb_w && y < fb_h) {
-        backbuffer[y * fb_pitch_pixels + x] = color;
+        vbe_put_pixel(x, y, color);
     }
 }
 
@@ -135,9 +163,8 @@ void vbe_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t colo
     if (y_end > fb_h || y_end < y) y_end = fb_h;
 
     for (uint32_t py = y; py < y_end; py++) {
-        uint32_t* row = &backbuffer[py * fb_pitch_pixels + x];
-        for (uint32_t px = 0; px < (x_end - x); px++) {
-            row[px] = color;
+        for (uint32_t px = x; px < x_end; px++) {
+            vbe_put_pixel(px, py, color);
         }
     }
 }
