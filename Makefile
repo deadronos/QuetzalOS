@@ -43,6 +43,7 @@ OBJS = boot/boot.o \
        kernel/graphics/font8x8.o \
        kernel/graphics/ritual_geo.o \
        kernel/graphics/console.o \
+       kernel/graphics/widget.o \
        kernel/serpentc/lexer.o \
        kernel/serpentc/builtins.o \
        kernel/serpentc/serpentc.o \

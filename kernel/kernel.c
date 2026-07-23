@@ -8,12 +8,36 @@
 #include "drivers/ps2_keyboard.h"
 #include "graphics/ritual_geo.h"
 #include "graphics/console.h"
+#include "graphics/widget.h"
 #include "serpentc/serpentc.h"
 #include "mm/phys.h"
 
 static char num_to_char(uint32_t val) {
     if (val < 10) return '0' + val;
     return '0' + (val % 10);
+}
+
+static void draw_banner_widget(widget_t* w, uint64_t tick) {
+    (void)tick;
+    vbe_draw_string(w->x + 16, w->y + 12, w->title, COLOR_FEATHER_WHITE, COLOR_JADE);
+}
+
+static void draw_tonalpohualli_widget(widget_t* w, uint64_t tick) {
+    (void)tick;
+    tonalpohualli_time_t tonal = pit_get_tonal_time();
+    vbe_draw_string(w->x + 12, w->y + 10, "=== TONALPOHUALLI SACRED TIME ===", COLOR_AZTEC_GOLD, COLOR_OBSIDIAN);
+    vbe_draw_string(w->x + 12, w->y + 32, "TRECENA NUMBER:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
+    char t_str[4] = { num_to_char(tonal.trecena_num / 10), num_to_char(tonal.trecena_num % 10), '\0', '\0' };
+    vbe_draw_string(w->x + 144, w->y + 32, t_str, COLOR_FEATHER_WHITE, COLOR_OBSIDIAN);
+    vbe_draw_string(w->x + 12, w->y + 52, "DAY SIGN:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
+    vbe_draw_string(w->x + 88, w->y + 52, tonal.sign_name, COLOR_JADE, COLOR_OBSIDIAN);
+}
+
+static void draw_ritual_geo_widget(widget_t* w, uint64_t tick) {
+    uint32_t cx = w->x + (w->w / 2);
+    draw_step_pyramid(cx, w->y + 190, 240, 6);
+    draw_sun_disk(cx, w->y + 20, 36, tick);
+    draw_feathered_serpent(w->x + 40, w->y + 230, 16, tick);
 }
 
 void kernel_main(multiboot_info_t* mb_info) {
@@ -46,6 +70,17 @@ void kernel_main(multiboot_info_t* mb_info) {
     keyboard_init();
     serpentc_init();
     console_init();
+    widget_system_init();
+
+    /* Register UI Widgets */
+    widget_t* w_banner = widget_create(0, 0, width, 40, "QUETZAL-OS v0.1 - PRAISE THE FEATHERED SERPENT [RING 0 / SAS 64-BIT]", draw_banner_widget);
+    widget_set_style(w_banner, WIDGET_STYLE_CONTAINER, COLOR_JADE, COLOR_JADE, COLOR_JADE, COLOR_FEATHER_WHITE);
+
+    widget_t* w_cal = widget_create(16, 60, 340, 90, "", draw_tonalpohualli_widget);
+    widget_set_style(w_cal, WIDGET_STYLE_BORDERED, COLOR_OBSIDIAN, COLOR_AZTEC_GOLD, COLOR_OBSIDIAN, COLOR_AZTEC_GOLD);
+
+    widget_t* w_geo = widget_create(16, 100, width - 32, 280, "", draw_ritual_geo_widget);
+    widget_set_style(w_geo, WIDGET_STYLE_CONTAINER, COLOR_TRANSPARENT, COLOR_TRANSPARENT, COLOR_TRANSPARENT, COLOR_TRANSPARENT);
 
     kprintf("[KERNEL] All Subsystems Online. Framebuffer %dx%d. Enabling IRQs...\n", width, height);
 
@@ -57,31 +92,12 @@ void kernel_main(multiboot_info_t* mb_info) {
 
     while (1) {
         uint64_t ticks = pit_get_ticks();
-        tonalpohualli_time_t tonal = pit_get_tonal_time();
 
         /* Clear Backbuffer with Obsidian background */
         vbe_clear(COLOR_OBSIDIAN);
 
-        /* Render Banner Header */
-        vbe_fill_rect(0, 0, width, 40, COLOR_JADE);
-        vbe_draw_string(16, 12, "QUETZAL-OS v0.1 - PRAISE THE FEATHERED SERPENT [RING 0 / SAS 64-BIT]", COLOR_FEATHER_WHITE, COLOR_JADE);
-
-        /* Render Ritual Geometry Elements */
-        draw_step_pyramid(width / 2, (height / 2) + 40, 240, 6);
-        draw_sun_disk(width / 2, 120, 36, ticks);
-        draw_feathered_serpent(60, 410, 16, ticks);
-
-        /* Render Sacred Tonalpohualli Calendar Widget */
-        vbe_fill_rect(16, 60, 340, 90, COLOR_AZTEC_GOLD);
-        vbe_fill_rect(18, 62, 336, 86, COLOR_OBSIDIAN);
-        vbe_draw_string(28, 70, "=== TONALPOHUALLI SACRED TIME ===", COLOR_AZTEC_GOLD, COLOR_OBSIDIAN);
-
-        vbe_draw_string(28, 92, "TRECENA NUMBER:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
-        char t_str[4] = { num_to_char(tonal.trecena_num / 10), num_to_char(tonal.trecena_num % 10), '\0', '\0' };
-        vbe_draw_string(160, 92, t_str, COLOR_FEATHER_WHITE, COLOR_OBSIDIAN);
-
-        vbe_draw_string(28, 112, "DAY SIGN:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
-        vbe_draw_string(104, 112, tonal.sign_name, COLOR_JADE, COLOR_OBSIDIAN);
+        /* Render Registered UI Widgets */
+        widget_draw_all(ticks);
 
         /* Render static ritual baseline */
         vbe_draw_line(0, 440, 800, 455, COLOR_TURQUOISE);
