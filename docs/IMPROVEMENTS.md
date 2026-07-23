@@ -236,7 +236,7 @@ Larger redesigns; tackle once the high-priority items are done.
 |-----|------------------------------------------------------|----------|--------|---------------|
 | H1  | Atomic PS/2 ring buffer                              | High     | S      | Open          |
 | H2  | Bounds-clip ritual_geo                               | High     | S      | Open          |
-| H3  | vbe_draw_char blank-glyph handling                   | High     | XS     | Open          |
+| H3  | vbe_draw_char blank-glyph handling                   | High     | XS     | Fixed         |
 | H4  | Don't clobber Multiboot framebuffer mode             | High     | XS     | Open          |
 | M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Open          |
 | M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Open          |

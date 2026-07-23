@@ -116,15 +116,9 @@ void vbe_clear(uint32_t color) {
         : "memory"
     );
 
-    if (tail) {
-        uint8_t fill_byte = (uint8_t)(color & 0xFFu);
-        dst = backbuffer + quads * 8u;
-        __asm__ volatile (
-            "rep stosb"
-            : "+D"(dst), "+c"(tail)
-            : "a"(fill_byte)
-            : "memory"
-        );
+    if (tail >= 4u) {
+        uint32_t* tail_ptr = (uint32_t*)((uint8_t*)backbuffer + quads * 8u);
+        *tail_ptr = color;
     }
 }
 
@@ -133,8 +127,8 @@ void vbe_fill_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t colo
     if (x >= fb_w || y >= fb_h) return;
     uint32_t x_end = x + w;
     uint32_t y_end = y + h;
-    if (x_end > fb_w) x_end = fb_w;
-    if (y_end > fb_h) y_end = fb_h;
+    if (x_end > fb_w || x_end < x) x_end = fb_w;
+    if (y_end > fb_h || y_end < y) y_end = fb_h;
 
     for (uint32_t py = y; py < y_end; py++) {
         uint32_t* row = &backbuffer[py * fb_pitch_pixels + x];
@@ -173,7 +167,7 @@ void vbe_draw_char(uint32_t x, uint32_t y, char c, uint32_t fg, uint32_t bg) {
     for (int row = 0; row < 8; row++) {
         if (font8x8_basic[idx][row] != 0) { any_pixel = 1; break; }
     }
-    if (!any_pixel) return;
+    if (!any_pixel && bg == COLOR_TRANSPARENT) return;
 
     for (int row = 0; row < 8; row++) {
         uint8_t bits = font8x8_basic[idx][row];
