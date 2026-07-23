@@ -16,6 +16,8 @@
 
 ---
 
+![QuetzalOS Screenshot](image.png)
+
 ## 🏛️ Core Philosophy & Architectural Highlights
 
 QuetzalOS (TonalOS) is a bare-metal 64-bit operating system inspired by retro workstation environments (TempleOS, NeXTSTEP, SGI IRIX) and ancient Mesoamerican ritual cosmology.
