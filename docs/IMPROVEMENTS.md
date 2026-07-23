@@ -256,6 +256,7 @@ Larger redesigns; tackle once the high-priority items are done.
 | D3  | Tag "partial" claims in README                       | Doc      | XS     | Fixed         |
 | G1  | Midpoint Circle Primitives (vbe_draw/fill_circle)    | Feature  | S      | Fixed         |
 | G2  | Interactive SerpentC REPL Console Overlay            | Feature  | M      | Fixed         |
+| G3  | Lightweight Ring 0 SAS Widget Framework              | Feature  | M      | Fixed         |
 
 \* M3 is *partially* addressed by the quick-wins PR (hoisting in `vbe_fill_rect`).
 
