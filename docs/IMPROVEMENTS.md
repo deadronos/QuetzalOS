@@ -254,6 +254,7 @@ Larger redesigns; tackle once the high-priority items are done.
 | D1  | Compile-time memory map asserts                      | Doc      | S      | Fixed         |
 | D2  | CONTRIBUTING.md                                      | Doc      | S      | Fixed         |
 | D3  | Tag "partial" claims in README                       | Doc      | XS     | Fixed         |
+| G1  | Midpoint Circle Primitives (vbe_draw/fill_circle)    | Feature  | S      | Fixed         |
 
 \* M3 is *partially* addressed by the quick-wins PR (hoisting in `vbe_fill_rect`).
 
