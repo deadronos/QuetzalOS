@@ -7,9 +7,11 @@ BITS 64
 
 global irq0_stub
 global irq1_stub
+global irq12_stub
 
 extern pit_handler
 extern keyboard_handler
+extern mouse_handler
 
 %macro PUSHALL 0
     push rax
@@ -58,5 +60,11 @@ irq0_stub:
 irq1_stub:
     PUSHALL
     call keyboard_handler
+    POPALL
+    iretq
+
+irq12_stub:
+    PUSHALL
+    call mouse_handler
     POPALL
     iretq
