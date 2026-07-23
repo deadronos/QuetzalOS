@@ -196,6 +196,74 @@ void vbe_draw_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint32_t 
     }
 }
 
+static void vbe_draw_hline(int x0, int x1, int y, uint32_t color) {
+    if (y < 0 || (uint32_t)y >= fb_h) return;
+    if (x0 > x1) { int tmp = x0; x0 = x1; x1 = tmp; }
+    if (x1 < 0 || (uint32_t)x0 >= fb_w) return;
+    if (x0 < 0) x0 = 0;
+    if ((uint32_t)x1 >= fb_w) x1 = (int)fb_w - 1;
+
+    for (int px = x0; px <= x1; px++) {
+        vbe_put_pixel((uint32_t)px, (uint32_t)y, color);
+    }
+}
+
+void vbe_draw_circle(uint32_t cx, uint32_t cy, uint32_t radius, uint32_t color) {
+    if (fb_w == 0 || fb_h == 0) return;
+    if (radius == 0) {
+        vbe_draw_pixel(cx, cy, color);
+        return;
+    }
+
+    int x = (int)radius;
+    int y = 0;
+    int err = 0;
+
+    while (x >= y) {
+        vbe_draw_pixel((uint32_t)((int)cx + x), (uint32_t)((int)cy + y), color);
+        vbe_draw_pixel((uint32_t)((int)cx + y), (uint32_t)((int)cy + x), color);
+        vbe_draw_pixel((uint32_t)((int)cx - y), (uint32_t)((int)cy + x), color);
+        vbe_draw_pixel((uint32_t)((int)cx - x), (uint32_t)((int)cy + y), color);
+        vbe_draw_pixel((uint32_t)((int)cx - x), (uint32_t)((int)cy - y), color);
+        vbe_draw_pixel((uint32_t)((int)cx - y), (uint32_t)((int)cy - x), color);
+        vbe_draw_pixel((uint32_t)((int)cx + y), (uint32_t)((int)cy - x), color);
+        vbe_draw_pixel((uint32_t)((int)cx + x), (uint32_t)((int)cy - y), color);
+
+        y++;
+        err += 1 + 2 * y;
+        if (2 * (err - x) + 1 > 0) {
+            x--;
+            err += 1 - 2 * x;
+        }
+    }
+}
+
+void vbe_fill_circle(uint32_t cx, uint32_t cy, uint32_t radius, uint32_t color) {
+    if (fb_w == 0 || fb_h == 0) return;
+    if (radius == 0) {
+        vbe_draw_pixel(cx, cy, color);
+        return;
+    }
+
+    int x = (int)radius;
+    int y = 0;
+    int err = 0;
+
+    while (x >= y) {
+        vbe_draw_hline((int)cx - x, (int)cx + x, (int)cy + y, color);
+        vbe_draw_hline((int)cx - x, (int)cx + x, (int)cy - y, color);
+        vbe_draw_hline((int)cx - y, (int)cx + y, (int)cy + x, color);
+        vbe_draw_hline((int)cx - y, (int)cx + y, (int)cy - x, color);
+
+        y++;
+        err += 1 + 2 * y;
+        if (2 * (err - x) + 1 > 0) {
+            x--;
+            err += 1 - 2 * x;
+        }
+    }
+}
+
 void vbe_draw_char(uint32_t x, uint32_t y, char c, uint32_t fg, uint32_t bg) {
     uint8_t idx = (uint8_t)c;
     if (idx >= 128u) idx = '?';
