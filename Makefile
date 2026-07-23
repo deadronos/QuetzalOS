@@ -35,6 +35,8 @@ ASFLAGS = -f elf64
 OBJS = boot/boot.o \
        kernel/arch/x86_64/idt.o \
        kernel/arch/x86_64/isr.o \
+       kernel/arch/x86_64/serial.o \
+       kernel/drivers/vga_text.o \
        kernel/drivers/vbe.o \
        kernel/drivers/pit.o \
        kernel/drivers/ps2_keyboard.o \
@@ -43,6 +45,7 @@ OBJS = boot/boot.o \
        kernel/serpentc/lexer.o \
        kernel/serpentc/builtins.o \
        kernel/serpentc/serpentc.o \
+       kernel/mm/phys.o \
        kernel/kernel.o
 
 all: quetzal.bin

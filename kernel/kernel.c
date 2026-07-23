@@ -1,11 +1,14 @@
 #include "kernel.h"
 #include "memory_map.h"
 #include "arch/x86_64/idt.h"
+#include "arch/x86_64/serial.h"
+#include "drivers/vga_text.h"
 #include "drivers/vbe.h"
 #include "drivers/pit.h"
 #include "drivers/ps2_keyboard.h"
 #include "graphics/ritual_geo.h"
 #include "serpentc/serpentc.h"
+#include "mm/phys.h"
 
 static char num_to_char(uint32_t val) {
     if (val < 10) return '0' + val;
@@ -13,6 +16,14 @@ static char num_to_char(uint32_t val) {
 }
 
 void kernel_main(multiboot_info_t* mb_info) {
+    /* Initialize Serial COM1 Logger & VGA Text Diagnostic Fallback */
+    serial_init();
+    vga_text_init();
+    kprintf("[KERNEL] QuetzalOS v0.1 Long Mode Booting...\n");
+
+    /* Initialize Physical Memory Frame Allocator */
+    phys_init(mb_info);
+
     uint64_t fb_addr = 0;
     uint32_t width   = QOS_DEFAULT_FB_WIDTH;
     uint32_t height  = QOS_DEFAULT_FB_HEIGHT;
@@ -33,6 +44,8 @@ void kernel_main(multiboot_info_t* mb_info) {
     pit_init(100); // 100 Hz timer
     keyboard_init();
     serpentc_init();
+
+    kprintf("[KERNEL] All Subsystems Online. Framebuffer %dx%d. Enabling IRQs...\n", width, height);
 
     /* Enable Interrupts */
     __asm__ volatile ("sti");

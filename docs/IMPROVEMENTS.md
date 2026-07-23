@@ -241,13 +241,13 @@ Larger redesigns; tackle once the high-priority items are done.
 | M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Fixed         |
 | M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Open          |
 | M3  | Bounds checks for draw funcs                         | Medium   | S      | Partial\*     |
-| M4  | VGA text-mode fallback                               | Medium   | M      | Open          |
-| M5  | Use Multiboot memory map                             | Medium   | M      | Open          |
+| M4  | VGA text-mode fallback                               | Medium   | M      | Fixed         |
+| M5  | Use Multiboot memory map                             | Medium   | M      | Fixed         |
 | M6  | Named segment selector constants                     | Medium   | XS     | Fixed         |
 | M7  | Full PCI bus scan + 64-bit BARs                      | Medium   | M      | Open          |
 | L1  | GitHub Actions CI + QEMU smoke test                  | Low      | M      | Open          |
 | L2  | GDB remote stub                                      | Low      | L      | Open          |
-| L3  | Serial `kprintf`                                     | Low      | M      | Open          |
+| L3  | Serial `kprintf`                                     | Low      | M      | Fixed         |
 | L4  | Cooperative task scheduler                           | Low      | XL     | Open          |
 | L5  | ELF64 loader for user scripts                        | Low      | XL     | Open          |
 | L6  | ACPI / HPET                                          | Low      | XL     | Open          |
