@@ -2,6 +2,7 @@
 #include "lexer.h"
 #include "builtins.h"
 #include "../drivers/vbe.h"
+#include "../graphics/console.h"
 
 void serpentc_init(void) {
     /* Initialize SerpentC Heap Arena marker at 0x01000000 */
@@ -44,6 +45,7 @@ void serpentc_eval(const char* script) {
                 tok = lexer_next(&lex);
                 uint32_t val = parse_expression(&lex, &tok);
                 symbol_set(name_tok.start, name_tok.length, val);
+                console_print("[SerpentC] Variable assigned.");
                 if (tok.type == TOKEN_SEMICOLON) {
                     tok = lexer_next(&lex);
                 }
@@ -71,7 +73,11 @@ void serpentc_eval(const char* script) {
                 }
 
                 uint32_t result = 0;
-                dispatch_builtin(name_tok.start, name_tok.length, args, arg_count, &result);
+                if (dispatch_builtin(name_tok.start, name_tok.length, args, arg_count, &result)) {
+                    console_print("[SerpentC] Command executed.");
+                } else {
+                    console_print("[SerpentC] Error: unknown function.");
+                }
 
                 if (tok.type == TOKEN_SEMICOLON) {
                     tok = lexer_next(&lex);

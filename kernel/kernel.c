@@ -7,6 +7,7 @@
 #include "drivers/pit.h"
 #include "drivers/ps2_keyboard.h"
 #include "graphics/ritual_geo.h"
+#include "graphics/console.h"
 #include "serpentc/serpentc.h"
 #include "mm/phys.h"
 
@@ -44,14 +45,15 @@ void kernel_main(multiboot_info_t* mb_info) {
     pit_init(100); // 100 Hz timer
     keyboard_init();
     serpentc_init();
+    console_init();
 
     kprintf("[KERNEL] All Subsystems Online. Framebuffer %dx%d. Enabling IRQs...\n", width, height);
 
     /* Enable Interrupts */
     __asm__ volatile ("sti");
 
-    char key_log[64] = "KEYS: ";
-    int key_pos = 6;
+    /* Initial SerpentC Script Setup */
+    serpentc_eval("feather_draw_line(0, 480, 800, 580, COLOR_TURQUOISE); feather_rect(700, 50, 80, 60, COLOR_AZTEC_GOLD);");
 
     while (1) {
         uint64_t ticks = pit_get_ticks();
@@ -65,9 +67,9 @@ void kernel_main(multiboot_info_t* mb_info) {
         vbe_draw_string(16, 12, "QUETZAL-OS v0.1 - PRAISE THE FEATHERED SERPENT [RING 0 / SAS 64-BIT]", COLOR_FEATHER_WHITE, COLOR_JADE);
 
         /* Render Ritual Geometry Elements */
-        draw_step_pyramid(width / 2, (height / 2) + 60, 240, 6);
+        draw_step_pyramid(width / 2, (height / 2) + 40, 240, 6);
         draw_sun_disk(width / 2, 120, 36, ticks);
-        draw_feathered_serpent(60, 440, 16, ticks);
+        draw_feathered_serpent(60, 410, 16, ticks);
 
         /* Render Sacred Tonalpohualli Calendar Widget */
         vbe_fill_rect(16, 60, 340, 90, COLOR_AZTEC_GOLD);
@@ -81,22 +83,21 @@ void kernel_main(multiboot_info_t* mb_info) {
         vbe_draw_string(28, 112, "DAY SIGN:", COLOR_TURQUOISE, COLOR_OBSIDIAN);
         vbe_draw_string(104, 112, tonal.sign_name, COLOR_JADE, COLOR_OBSIDIAN);
 
-        /* Render a diagonal ritual line (calls the new vbe_draw_line that
-         * serpentc_eval advertised but never implemented).                   */
-        vbe_draw_line(0, 480, 800, 580, COLOR_TURQUOISE);
+        /* Render static ritual baseline */
+        vbe_draw_line(0, 440, 800, 455, COLOR_TURQUOISE);
 
-        /* Handle Input */
+        /* Handle Keyboard Input for Interactive SerpentC Console */
         while (keyboard_has_char()) {
             char ch = keyboard_getchar();
-            if (ch && key_pos < 60) {
-                key_log[key_pos++] = ch;
-                key_log[key_pos] = '\0';
+            if (ch == '`' || ch == '~') {
+                console_toggle();
+            } else if (ch) {
+                console_handle_char(ch);
             }
         }
-        vbe_draw_string(16, 520, key_log, COLOR_AZTEC_GOLD, COLOR_OBSIDIAN);
 
-        /* Evaluate real SerpentC script */
-        serpentc_eval("feather_draw_line(0, 480, 800, 580, COLOR_TURQUOISE); feather_rect(700, 50, 80, 60, COLOR_AZTEC_GOLD);");
+        /* Render Console Overlay */
+        console_draw();
 
         /* Swap double buffer to physical framebuffer */
         vbe_swap_buffers();
