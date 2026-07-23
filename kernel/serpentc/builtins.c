@@ -80,6 +80,16 @@ int dispatch_builtin(const char* name, size_t len, const uint32_t* args, size_t 
             vbe_fill_rect(args[0], args[1], args[2], args[3], args[4]);
             return 1;
         }
+    } else if (str_equal(name, len, "feather_draw_circle")) {
+        if (arg_count >= 4) {
+            vbe_draw_circle(args[0], args[1], args[2], args[3]);
+            return 1;
+        }
+    } else if (str_equal(name, len, "feather_circle") || str_equal(name, len, "feather_fill_circle")) {
+        if (arg_count >= 4) {
+            vbe_fill_circle(args[0], args[1], args[2], args[3]);
+            return 1;
+        }
     } else if (str_equal(name, len, "feather_clear")) {
         if (arg_count >= 1) {
             vbe_clear(args[0]);

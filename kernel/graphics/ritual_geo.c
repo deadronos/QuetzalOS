@@ -44,20 +44,19 @@ void draw_feathered_serpent(uint32_t start_x, uint32_t start_y, uint32_t length,
 
 void draw_sun_disk(uint32_t cx, uint32_t cy, uint32_t radius, uint64_t tick) {
     (void)tick;
-    /* Draw outer solar ring with origin underflow checks */
-    uint32_t min_x = (cx >= radius) ? (cx - radius) : 0;
-    uint32_t min_y = (cy >= radius) ? (cy - radius) : 0;
-    vbe_fill_rect(min_x, min_y, radius * 2, radius * 2, COLOR_AZTEC_GOLD);
+    /* Outer solar disc in Aztec Gold */
+    vbe_fill_circle(cx, cy, radius, COLOR_AZTEC_GOLD);
 
-    if (radius > 4) {
-        uint32_t inner_rad = radius - 4;
-        uint32_t inner_x = (cx >= inner_rad) ? (cx - inner_rad) : 0;
-        uint32_t inner_y = (cy >= inner_rad) ? (cy - inner_rad) : 0;
-        vbe_fill_rect(inner_x, inner_y, inner_rad * 2, inner_rad * 2, COLOR_OBSIDIAN);
+    /* Inner obsidian solar ring */
+    if (radius > 6) {
+        vbe_fill_circle(cx, cy, radius - 6, COLOR_OBSIDIAN);
     }
 
-    uint32_t half_rad = radius / 2;
-    uint32_t center_x = (cx >= half_rad) ? (cx - half_rad) : 0;
-    uint32_t center_y = (cy >= half_rad) ? (cy - half_rad) : 0;
-    vbe_fill_rect(center_x, center_y, radius, radius, COLOR_COCHINEAL_RED);
+    /* Core solar center in Cochineal Red */
+    if (radius > 12) {
+        vbe_fill_circle(cx, cy, radius / 2, COLOR_COCHINEAL_RED);
+    }
+
+    /* Outer golden corona ring outline */
+    vbe_draw_circle(cx, cy, radius, COLOR_AZTEC_GOLD);
 }
