@@ -25,6 +25,7 @@ static uint32_t* backbuffer = (uint32_t*)(uintptr_t)QOS_BACKBUFFER_BASE;
 static uint32_t fb_w = QOS_DEFAULT_FB_WIDTH;
 static uint32_t fb_h = QOS_DEFAULT_FB_HEIGHT;
 static uint32_t fb_pitch_pixels = QOS_DEFAULT_FB_PITCH / 4u;
+static int externally_configured = 0;
 
 static uint32_t pci_read_config(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset) {
     uint32_t address = (uint32_t)((bus << 16) | (dev << 11) | (func << 8) | (offset & 0xFC) | ((uint32_t)0x80000000));
@@ -72,6 +73,7 @@ void vbe_init(uint64_t lfb_addr, uint32_t width, uint32_t height, uint32_t pitch
     /* Dynamically probe PCI bus for VGA LFB address if not provided by multiboot */
     if (lfb_addr != 0) {
         lfb = (uint32_t*)(uintptr_t)lfb_addr;
+        externally_configured = 1;
     } else {
         uint32_t probed_lfb = pci_find_vga_lfb();
         if (probed_lfb != 0) {
@@ -83,8 +85,10 @@ void vbe_init(uint64_t lfb_addr, uint32_t width, uint32_t height, uint32_t pitch
     if (height > 0) fb_h = height;
     if (pitch > 0)  fb_pitch_pixels = pitch / 4u;
 
-    /* Program Bochs/QEMU VBE DISPI graphics hardware */
-    bochs_vbe_set_mode((uint16_t)fb_w, (uint16_t)fb_h, 32);
+    /* Program Bochs/QEMU VBE DISPI graphics hardware only if mode was not set by bootloader */
+    if (!externally_configured) {
+        bochs_vbe_set_mode((uint16_t)fb_w, (uint16_t)fb_h, 32);
+    }
 }
 
 uint32_t vbe_get_width(void)  { return fb_w; }

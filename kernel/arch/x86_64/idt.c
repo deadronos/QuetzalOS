@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "io.h"
+#include "segments.h"
 
 static idt_entry_t idt[256];
 static idt_ptr_t   idtp;
@@ -55,9 +56,9 @@ void idt_init(void) {
     pic_remap();
 
     // IRQ0 -> Vector 32 (Timer)
-    idt_set_gate(32, (uint64_t)irq0_stub, 0x08, 0x8E);
+    idt_set_gate(32, (uint64_t)irq0_stub, GDT64_KERNEL_CS, IDT_ATTR_PRESENT_RING0_INT_GATE);
     // IRQ1 -> Vector 33 (Keyboard)
-    idt_set_gate(33, (uint64_t)irq1_stub, 0x08, 0x8E);
+    idt_set_gate(33, (uint64_t)irq1_stub, GDT64_KERNEL_CS, IDT_ATTR_PRESENT_RING0_INT_GATE);
 
     __asm__ volatile ("lidt %0" : : "m"(idtp));
 }

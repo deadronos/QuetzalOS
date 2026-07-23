@@ -234,16 +234,16 @@ Larger redesigns; tackle once the high-priority items are done.
 
 | ID  | Title                                                | Severity | Effort | Status        |
 |-----|------------------------------------------------------|----------|--------|---------------|
-| H1  | Atomic PS/2 ring buffer                              | High     | S      | Open          |
-| H2  | Bounds-clip ritual_geo                               | High     | S      | Open          |
+| H1  | Atomic PS/2 ring buffer                              | High     | S      | Fixed         |
+| H2  | Bounds-clip ritual_geo                               | High     | S      | Fixed         |
 | H3  | vbe_draw_char blank-glyph handling                   | High     | XS     | Fixed         |
-| H4  | Don't clobber Multiboot framebuffer mode             | High     | XS     | Open          |
+| H4  | Don't clobber Multiboot framebuffer mode             | High     | XS     | Fixed         |
 | M1  | Real SerpentC parser/interpreter                     | Medium   | L      | Open          |
 | M2  | Explicit `rep movsq` benchmark                       | Medium   | S      | Open          |
 | M3  | Bounds checks for draw funcs                         | Medium   | S      | Partial\*     |
 | M4  | VGA text-mode fallback                               | Medium   | M      | Open          |
 | M5  | Use Multiboot memory map                             | Medium   | M      | Open          |
-| M6  | Named segment selector constants                     | Medium   | XS     | Open          |
+| M6  | Named segment selector constants                     | Medium   | XS     | Fixed         |
 | M7  | Full PCI bus scan + 64-bit BARs                      | Medium   | M      | Open          |
 | L1  | GitHub Actions CI + QEMU smoke test                  | Low      | M      | Open          |
 | L2  | GDB remote stub                                      | Low      | L      | Open          |
