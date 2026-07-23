@@ -40,6 +40,7 @@ OBJS = boot/boot.o \
        kernel/drivers/vbe.o \
        kernel/drivers/pit.o \
        kernel/drivers/ps2_keyboard.o \
+       kernel/drivers/ps2_mouse.o \
        kernel/graphics/font8x8.o \
        kernel/graphics/ritual_geo.o \
        kernel/graphics/console.o \

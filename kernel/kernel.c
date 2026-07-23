@@ -6,6 +6,7 @@
 #include "drivers/vbe.h"
 #include "drivers/pit.h"
 #include "drivers/ps2_keyboard.h"
+#include "drivers/ps2_mouse.h"
 #include "graphics/ritual_geo.h"
 #include "graphics/console.h"
 #include "graphics/widget.h"
@@ -68,6 +69,7 @@ void kernel_main(multiboot_info_t* mb_info) {
     idt_init();
     pit_init(100); // 100 Hz timer
     keyboard_init();
+    mouse_init();
     serpentc_init();
     console_init();
     widget_system_init();
@@ -114,6 +116,9 @@ void kernel_main(multiboot_info_t* mb_info) {
 
         /* Render Console Overlay */
         console_draw();
+
+        /* Render Mouse Cursor Overlay */
+        mouse_draw_cursor();
 
         /* Swap double buffer to physical framebuffer */
         vbe_swap_buffers();

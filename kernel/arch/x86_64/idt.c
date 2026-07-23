@@ -7,6 +7,7 @@ static idt_ptr_t   idtp;
 
 extern void irq0_stub(void);
 extern void irq1_stub(void);
+extern void irq12_stub(void);
 
 void idt_set_gate(uint8_t num, uint64_t base, uint16_t sel, uint8_t flags) {
     idt[num].offset_low = (base & 0xFFFF);
@@ -40,9 +41,9 @@ static void pic_remap(void) {
     outb(0xA1, 0x01);
     io_wait();
 
-    /* Mask all interrupts except IRQ0 (Timer) and IRQ1 (Keyboard) */
-    outb(0x21, 0xFC);
-    outb(0xA1, 0xFF);
+    /* Mask all interrupts except IRQ0 (Timer), IRQ1 (Keyboard), IRQ2 (Cascade), IRQ12 (Mouse) */
+    outb(0x21, 0xF8); // Unmask IRQ0, IRQ1, IRQ2
+    outb(0xA1, 0xEF); // Unmask IRQ12 (IRQ4 on Slave PIC)
 }
 
 void idt_init(void) {
@@ -59,6 +60,8 @@ void idt_init(void) {
     idt_set_gate(32, (uint64_t)irq0_stub, GDT64_KERNEL_CS, IDT_ATTR_PRESENT_RING0_INT_GATE);
     // IRQ1 -> Vector 33 (Keyboard)
     idt_set_gate(33, (uint64_t)irq1_stub, GDT64_KERNEL_CS, IDT_ATTR_PRESENT_RING0_INT_GATE);
+    // IRQ12 -> Vector 44 (Mouse)
+    idt_set_gate(44, (uint64_t)irq12_stub, GDT64_KERNEL_CS, IDT_ATTR_PRESENT_RING0_INT_GATE);
 
     __asm__ volatile ("lidt %0" : : "m"(idtp));
 }
